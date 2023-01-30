@@ -4,6 +4,9 @@ module.exports = {
   testEnvironment: 'node',
   coverageDirectory: 'coverage',
   collectCoverageFrom: ['src/**/*.{js,ts}'],
+  testMatch: [
+    "**/unit/**/*.test.ts"
+  ],
   coverageThreshold: {
     global: {
       branches: 0,
