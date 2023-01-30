@@ -1,0 +1,92 @@
+service: serverlessSetup
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  profile: lincon
+  region: us-west-2
+  deploymentBucket:
+    name: serverless-deployment-bucket-73354dsb-344554-fsdfs56h
+    serverSideEncryption: AES256
+
+  environment:
+    tableName: ${self:custom.tableName}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: '*'
+    - Effect: 'Allow'
+      Action:
+        - 's3:PutObject'
+        - 's3:GetObject'
+      Resource: "arn:aws:s3:::*/*"
+    - Effect: 'Allow'
+      Action:
+        - 's3:ListBucket'
+      Resource: "arn:aws:s3:::*"
+
+custom:
+  tableName: products
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+    migration:
+      dir: offline/migrations
+
+# functions
+functions:
+  getProducts:
+    handler: src/functions/products.handler
+    events:
+      - http: 
+          path: products
+          method: get
+  getProduct:
+    handler: src/functions/products.handler
+    events:
+      - http: 
+          path: product/{id}
+          method: get
+  putProduct:
+    handler: src/functions/products.handler
+    events:
+      - http: 
+          path: product
+          method: put
+  deleteProduct:
+    handler: src/functions/products.handler
+    events:
+      - http: 
+          path: product/{id}
+          method: delete
+  patchProduct:
+    handler: src/functions/products.handler
+    events:
+      - http: 
+          path: product/{id}
+          method: patch
+
+# Serverless plugins
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+  - serverless-dynamodb-local
+
+resources:
+  Resources:
+    DDBTABLEPROD1:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tableName}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST

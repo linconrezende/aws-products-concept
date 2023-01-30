@@ -1,0 +1,5 @@
+.build
+.serverless
+node_modules
+./FIRST_EXAMPLE_JS/node_modules
+*/.DS_Store
